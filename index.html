@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Do you like ~? · 3학년 영어</title>
+  <link rel="stylesheet" href="https://hangeul.pstatic.net/hangeul_static/css/nanum-square-round.css" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="app-header">
+    <div class="balloon b1"></div>
+    <div class="balloon b2"></div>
+    <div class="balloon b3"></div>
+    <h1>🌈 Do you like ~? 묻고 답해요!</h1>
+    <p class="subtitle">Do you like apples? · Yes, I do. / No, I don't.</p>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab-btn active" data-tab="qa">🗣️ 묻고 답하기</button>
+    <button class="tab-btn" data-tab="survey">📋 좋아함 서베이 <span id="survey-count" class="tab-count">0</span></button>
+    <button class="tab-btn" data-tab="quiz">🎯 듣고 맞히기</button>
+    <button class="tab-btn" data-tab="speak">🎤 말하기 연습</button>
+  </nav>
+
+  <div class="toolbar">
+    <button id="img-toggle" class="img-toggle" type="button">🖼️ 사진</button>
+    <label class="speed-control">말하기 속도
+      <input id="rate" type="range" min="0.6" max="1.1" step="0.05" value="0.85" />
+    </label>
+    <span id="voice-status" class="voice-status"></span>
+  </div>
+
+  <main>
+    <!-- ===== 묻고 답하기 ===== -->
+    <section id="tab-qa" class="tab-panel active">
+      <div class="section-block">
+        <h2>🗣️ 묻고 답해 봐요 <span class="count" id="qa-count">8개</span></h2>
+        <div class="cat-switch" id="qa-cats"></div>
+        <p class="hint">주제를 고르면 낱말 카드가 나와요. <b>듣기 ▶</b> 로 질문을 듣고, <b>👍 Yes, I do.</b> 또는 <b>👎 No, I don't.</b> 를 눌러 대답을 따라 말해 보세요. 영어 낱말을 누르면 <b>뜻과 발음</b>도 알 수 있어요!</p>
+        <div id="qa-grid" class="card-grid"></div>
+      </div>
+    </section>
+
+    <!-- ===== 좋아함 서베이 ===== -->
+    <section id="tab-survey" class="tab-panel">
+      <div class="section-block">
+        <h2>📋 나의 좋아함 서베이</h2>
+        <p class="hint">친구에게 묻듯이 <b>Do you like ~?</b> 를 듣고, 내가 좋아하면 <b>👍 Yes, I do.</b>, 안 좋아하면 <b>👎 No, I don't.</b> 를 눌러요. 다 하면 아래에서 <b>내가 좋아하는 것 결과</b>를 볼 수 있어요!</p>
+
+        <div id="survey-progress" class="survey-progress"></div>
+        <div id="survey-list"></div>
+
+        <div id="survey-result" class="survey-result"></div>
+        <div class="survey-actions">
+          <button id="survey-reset" class="btn ghost">🧹 처음부터 다시 하기</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 듣고 맞히기 ===== -->
+    <section id="tab-quiz" class="tab-panel">
+      <div class="section-block">
+        <h2>🎯 듣고 맞히기 게임</h2>
+        <p class="hint">선생님(컴퓨터)이 <b>Do you like ~?</b> 라고 물어봐요. 잘 듣고 <b>알맞은 그림</b>을 골라요!</p>
+        <div class="cat-switch" id="quiz-cats"></div>
+
+        <div class="quiz-scorebar">
+          <span>⭐ 점수 <b id="quiz-score">0</b></span>
+          <span>🔥 연속 <b id="quiz-streak">0</b></span>
+          <span>🎲 문제 <b id="quiz-total">0</b></span>
+        </div>
+
+        <div class="quiz-stage">
+          <button id="quiz-replay" class="btn primary quiz-replay">🔊 다시 듣기</button>
+          <div id="quiz-question" class="quiz-question">아래 <b>시작하기</b>를 눌러요! 👇</div>
+          <div id="quiz-choices" class="quiz-choices"></div>
+          <div id="quiz-feedback" class="quiz-feedback"></div>
+          <button id="quiz-next" class="btn primary quiz-next" style="display:none">다음 문제 ▶</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 말하기 연습 ===== -->
+    <section id="tab-speak" class="tab-panel">
+      <div class="section-block">
+        <h2>🎤 말하기 연습</h2>
+        <p class="hint">마이크를 누르고 문장을 또박또박 말해 보세요. <b>정확도</b>가 나와요! (크롬에서 가장 잘 돼요 😊)</p>
+
+        <h3 class="speak-sub">먼저 대답을 연습해요</h3>
+        <div id="speak-answers" class="card-grid speak-answers"></div>
+
+        <h3 class="speak-sub">질문을 연습해요</h3>
+        <div class="cat-switch" id="speak-cats"></div>
+        <div id="speak-grid" class="card-grid"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="app-footer">
+    <span class="voice-status">3학년 영어 · Do you like ~? 🌈 묻고 답하기</span>
+  </footer>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
