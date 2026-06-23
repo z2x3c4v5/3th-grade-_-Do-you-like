@@ -21,7 +21,7 @@
 
   <nav class="tabs">
     <button class="tab-btn active" data-tab="qa">🗣️ 묻고 답하기</button>
-    <button class="tab-btn" data-tab="speak">🎤 말하기 연습</button>
+    <button class="tab-btn" data-tab="practice">🎤 내 문장 연습 <span id="practice-count" class="tab-count">0</span></button>
   </nav>
 
   <div class="toolbar">
@@ -43,18 +43,15 @@
       </div>
     </section>
 
-    <!-- ===== 말하기 연습 ===== -->
-    <section id="tab-speak" class="tab-panel">
+    <!-- ===== 내 문장 연습 ===== -->
+    <section id="tab-practice" class="tab-panel">
       <div class="section-block">
-        <h2>🎤 말하기 연습</h2>
-        <p class="hint">마이크를 누르고 문장을 또박또박 말해 보세요. <b>정확도</b>가 나와요! (크롬에서 가장 잘 돼요 😊)</p>
-
-        <h3 class="speak-sub">먼저 대답을 연습해요</h3>
-        <div id="speak-answers" class="card-grid speak-answers"></div>
-
-        <h3 class="speak-sub">질문을 연습해요</h3>
-        <div class="cat-switch" id="speak-cats"></div>
-        <div id="speak-grid" class="card-grid"></div>
+        <h2>🎤 내 문장 연습</h2>
+        <p class="hint">⭐ 로 담은 문장을 마이크로 말해 <b>정확도</b>를 측정해요! <b>묻고 답하기</b> 탭에서 카드 아래 <b>⭐ 연습 목록에 추가</b> 를 눌러 연습할 문장을 담아보세요. (크롬에서 가장 잘 돼요 😊)</p>
+        <p id="practice-empty" class="practice-empty">
+          아직 담은 문장이 없어요! <b>묻고 답하기</b> 탭에서 <b>⭐</b> 로 연습할 문장을 담아보세요.
+        </p>
+        <div id="practice-list" class="card-grid"></div>
       </div>
     </section>
   </main>

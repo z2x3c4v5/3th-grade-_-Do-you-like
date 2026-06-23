@@ -2,7 +2,7 @@
  * 3학년 영어 · Do you like ~ ? · 묻고 답하기 웹 앱
  * - 음성 출력 : Web Speech API (SpeechSynthesis)
  * - 단어 클릭 : 발음 + 뜻 풍선
- * - 묻고 답하기 / 말하기 연습
+ * - 묻고 답하기 / 내 문장 연습(⭐로 담은 문장 녹음·정확도)
  * ========================================================= */
 
 /* ---------- 음성 합성 (TTS) ---------- */
@@ -98,25 +98,46 @@ function imageUrl(prompt) {
 }
 
 /* 카드 그림(visual) 요소 만들기 : 사진(img, 사진모드) > 이모지 */
-function makeVisual(item) {
+function makeVisual(item, cls) {
+  cls = cls || {};
   if (imageMode && item.img) {
     const img = document.createElement("img");
-    img.className = "photo";
+    img.className = cls.photo || "photo";
     img.loading = "lazy";
     img.alt = item.word || item.en;
     img.src = imageUrl(item.img);
     img.addEventListener("error", () => {
       const em = document.createElement("div");
-      em.className = "emoji";
+      em.className = cls.emoji || "emoji";
       em.textContent = item.emoji;
       img.replaceWith(em);
     });
     return img;
   }
   const em = document.createElement("div");
-  em.className = "emoji";
+  em.className = cls.emoji || "emoji";
   em.textContent = item.emoji;
   return em;
+}
+
+/* =========================================================
+ * 연습 목록 (⭐로 담은 문장)  ※ 참고 페이지와 같은 방식
+ * ========================================================= */
+let selected = new Map();
+try { (JSON.parse(localStorage.getItem("dyl_selected") || "[]") || []).forEach(it => selected.set(it.en, it)); } catch (e) {}
+function persistSelected() { try { localStorage.setItem("dyl_selected", JSON.stringify([...selected.values()])); } catch (e) {} }
+function isSelected(en) { return selected.has(en); }
+function toggleSelect(item) {
+  if (selected.has(item.en)) selected.delete(item.en);
+  else selected.set(item.en, { en: item.en, ko: item.ko, emoji: item.emoji, img: item.img, word: item.word });
+  persistSelected();
+  updatePracticeBadge();
+  renderQA();
+  if (document.getElementById("tab-practice").classList.contains("active")) renderPractice();
+}
+function updatePracticeBadge() {
+  const c = document.getElementById("practice-count");
+  if (c) c.textContent = selected.size;
 }
 
 /* =========================================================
@@ -137,11 +158,7 @@ function makeQACard(item, tone) {
   const tag = document.createElement("span");
   tag.className = "card-tag";
   tag.textContent = item.ko;
-  const listen = document.createElement("button");
-  listen.className = "listen-all";
-  listen.textContent = "듣기 ▶";
-  listen.addEventListener("click", e => { e.stopPropagation(); speakQ(); });
-  top.append(tag, listen);
+  top.append(tag);
 
   const visual = makeVisual(item);
 
@@ -179,7 +196,16 @@ function makeQACard(item, tone) {
     ansRow.appendChild(btn);
   });
 
-  div.append(top, visual, box, ansRow);
+  // ⭐ 연습 목록에 담기 (질문 문장)
+  const practiceItem = { en: item.q, ko: item.qko, emoji: item.emoji, img: item.img, word: item.word };
+  const sel = document.createElement("button");
+  sel.className = "select-btn";
+  const on = isSelected(item.q);
+  sel.classList.toggle("on", on);
+  sel.textContent = on ? "✓ 연습 목록에 있음" : "⭐ 연습 목록에 추가";
+  sel.addEventListener("click", e => { e.stopPropagation(); toggleSelect(practiceItem); });
+
+  div.append(top, visual, box, ansRow, sel);
   return div;
 }
 
@@ -192,9 +218,8 @@ function renderQA() {
 }
 
 /* =========================================================
- * 2) 말하기 연습 (마이크 정확도)
+ * 2) 내 문장 연습 (마이크 정확도)
  * ========================================================= */
-let speakCat = "food";
 let stats = {};
 try { stats = JSON.parse(localStorage.getItem("dyl_stats") || "{}") || {}; } catch (e) {}
 function saveStats() { try { localStorage.setItem("dyl_stats", JSON.stringify(stats)); } catch (e) {} }
@@ -253,21 +278,29 @@ function practiceAttempt(target, cb) {
   try { rec.start(); } catch (e) { recBusy = false; cb.onend && cb.onend(); }
 }
 
-function makePracticeCard(item, tone) {
-  // item: { en(문장), ko, tag }
+function makePracticeCard(item) {
   const div = document.createElement("div");
-  div.className = "card pcard tone-" + (tone % 6);
+  div.className = "card pcard";
 
   const top = document.createElement("div");
   top.className = "card-top";
   const tag = document.createElement("span");
   tag.className = "card-tag";
-  tag.textContent = item.tag || "";
-  const listen = document.createElement("button");
-  listen.className = "listen-all";
-  listen.textContent = "듣기 ▶";
-  listen.addEventListener("click", () => speak(item.en));
-  top.append(tag, listen);
+  tag.textContent = item.word || "";
+  const remove = document.createElement("button");
+  remove.className = "premove";
+  remove.setAttribute("aria-label", "목록에서 빼기");
+  remove.textContent = "✕";
+  remove.addEventListener("click", () => {
+    selected.delete(item.en);
+    persistSelected();
+    updatePracticeBadge();
+    renderPractice();
+    renderQA();
+  });
+  top.append(tag, remove);
+
+  const visual = makeVisual(item);
 
   const box = document.createElement("div");
   box.className = "q-box";
@@ -337,25 +370,24 @@ function makePracticeCard(item, tone) {
     });
   });
 
-  div.append(top, box, micArea, statsEl, fb);
+  div.append(top, visual, box, micArea, statsEl, fb);
   return div;
 }
 
-function renderSpeak() {
-  // 대답 연습 (고정 2개)
-  const ansWrap = document.getElementById("speak-answers");
-  ansWrap.innerHTML = "";
-  [
-    { en: ANSWERS.yes.en, ko: ANSWERS.yes.ko, tag: "대답" },
-    { en: ANSWERS.no.en, ko: ANSWERS.no.ko, tag: "대답" },
-  ].forEach((it, i) => ansWrap.appendChild(makePracticeCard(it, i + 3)));
-
-  // 질문 연습 (선택한 주제)
-  const grid = document.getElementById("speak-grid");
-  grid.innerHTML = "";
-  ITEMS[speakCat].forEach((item, i) => {
-    grid.appendChild(makePracticeCard({ en: item.q, ko: item.qko, tag: item.ko }, i));
-  });
+function renderPractice() {
+  const list = document.getElementById("practice-list");
+  const empty = document.getElementById("practice-empty");
+  const items = [...selected.values()];
+  if (!items.length) {
+    empty.style.display = "block";
+    list.innerHTML = "";
+    updatePracticeBadge();
+    return;
+  }
+  empty.style.display = "none";
+  list.innerHTML = "";
+  items.forEach(it => list.appendChild(makePracticeCard(it)));
+  updatePracticeBadge();
 }
 
 /* =========================================================
@@ -379,13 +411,13 @@ function buildCatButtons(containerId, current, onPick) {
 }
 
 buildCatButtons("qa-cats", () => qaCat, k => { qaCat = k; renderQA(); });
-buildCatButtons("speak-cats", () => speakCat, k => { speakCat = k; renderSpeak(); });
 
 /* ---------- 사진/이모지 토글 ---------- */
 document.getElementById("img-toggle").addEventListener("click", () => {
   imageMode = !imageMode;
   document.getElementById("img-toggle").textContent = imageMode ? "🖼️ 사진" : "😀 그림";
   renderQA();
+  if (document.getElementById("tab-practice").classList.contains("active")) renderPractice();
 });
 
 /* ---------- 말하기 속도 ---------- */
@@ -400,10 +432,11 @@ document.querySelectorAll(".tab-btn").forEach(btn => {
     const tab = btn.dataset.tab;
     document.getElementById("tab-" + tab).classList.add("active");
     synth.cancel(); hidePopup();
-    if (tab === "speak") renderSpeak();
+    if (tab === "practice") renderPractice();
     window.scrollTo({ top: 0, behavior: "smooth" });
   });
 });
 
 /* ---------- 첫 화면 ---------- */
 renderQA();
+updatePracticeBadge();
