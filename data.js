@@ -4,7 +4,7 @@
  * - 3개 주제(카테고리)
  *    🍎 음식·과일 : 사과·바나나·포도·빵·샐러드·피자·아이스크림·오렌지 (수업에서 한 서베이)
  *    🐶 동물      : 개·고양이·오리·호랑이·토끼·원숭이·코끼리·사자 (8가지)
- *    🎨 색깔      : 빨강·파랑·노랑·초록·분홍·보라·검정·하양 (추천 주제)
+ *    ✏️ 학용품·물건 : 연필·펜·크레용·책·공책·가방·자·가위 (8가지)
  * - 단어를 누르면 뜻·발음을 알 수 있어요.
  * ========================================================= */
 
@@ -18,7 +18,7 @@ const ANSWERS = {
 const CATEGORIES = [
   { key: "food",   label: "🍎 음식·과일", title: "음식·과일" },
   { key: "animal", label: "🐶 동물",      title: "동물" },
-  { key: "color",  label: "🎨 색깔",      title: "색깔" },
+  { key: "thing",  label: "✏️ 학용품·물건", title: "학용품·물건" },
 ];
 
 /* ===== 낱말 카드 =====
@@ -28,8 +28,7 @@ const CATEGORIES = [
  * q   : 질문 전체 문장
  * qko : 질문 우리말 뜻
  * emoji: 그림 이모지
- * img : 실사 사진 검색어 (없으면 이모지/색칠로 보여줌)
- * swatch: 색깔 카드일 때 보여줄 색(HEX)
+ * img : 실사 사진 검색어 (없으면 이모지로 보여줌)
  */
 const ITEMS = {
   food: [
@@ -52,15 +51,15 @@ const ITEMS = {
     { en: "elephants",  word: "elephant",  ko: "코끼리",     q: "Do you like elephants?",  qko: "너는 코끼리를 좋아하니?",     emoji: "🐘", img: "a big elephant" },
     { en: "lions",      word: "lion",      ko: "사자",       q: "Do you like lions?",      qko: "너는 사자를 좋아하니?",       emoji: "🦁", img: "a lion with a mane" },
   ],
-  color: [
-    { en: "red",        word: "red",       ko: "빨강",       q: "Do you like red?",        qko: "너는 빨간색을 좋아하니?",     emoji: "🔴", swatch: "#ef4444" },
-    { en: "blue",       word: "blue",      ko: "파랑",       q: "Do you like blue?",       qko: "너는 파란색을 좋아하니?",     emoji: "🔵", swatch: "#3b82f6" },
-    { en: "yellow",     word: "yellow",    ko: "노랑",       q: "Do you like yellow?",     qko: "너는 노란색을 좋아하니?",     emoji: "🟡", swatch: "#facc15" },
-    { en: "green",      word: "green",     ko: "초록",       q: "Do you like green?",      qko: "너는 초록색을 좋아하니?",     emoji: "🟢", swatch: "#22c55e" },
-    { en: "pink",       word: "pink",      ko: "분홍",       q: "Do you like pink?",       qko: "너는 분홍색을 좋아하니?",     emoji: "🩷", swatch: "#ec4899" },
-    { en: "purple",     word: "purple",    ko: "보라",       q: "Do you like purple?",     qko: "너는 보라색을 좋아하니?",     emoji: "🟣", swatch: "#a855f7" },
-    { en: "black",      word: "black",     ko: "검정",       q: "Do you like black?",      qko: "너는 검은색을 좋아하니?",     emoji: "⚫", swatch: "#1f2937" },
-    { en: "white",      word: "white",     ko: "하양",       q: "Do you like white?",      qko: "너는 흰색을 좋아하니?",       emoji: "⚪", swatch: "#f3f4f6" },
+  thing: [
+    { en: "pencils",    word: "pencil",    ko: "연필",       q: "Do you like pencils?",    qko: "너는 연필을 좋아하니?",       emoji: "✏️", img: "colorful pencils" },
+    { en: "pens",       word: "pen",       ko: "펜",         q: "Do you like pens?",       qko: "너는 펜을 좋아하니?",         emoji: "🖊️", img: "colorful pens" },
+    { en: "crayons",    word: "crayon",    ko: "크레용",     q: "Do you like crayons?",    qko: "너는 크레용을 좋아하니?",     emoji: "🖍️", img: "a box of colorful crayons" },
+    { en: "books",      word: "book",      ko: "책",         q: "Do you like books?",      qko: "너는 책을 좋아하니?",         emoji: "📚", img: "a stack of colorful books" },
+    { en: "notebooks",  word: "notebook",  ko: "공책",       q: "Do you like notebooks?",  qko: "너는 공책을 좋아하니?",       emoji: "📓", img: "colorful school notebooks" },
+    { en: "bags",       word: "bag",       ko: "가방",       q: "Do you like bags?",       qko: "너는 가방을 좋아하니?",       emoji: "🎒", img: "a colorful school backpack" },
+    { en: "rulers",     word: "ruler",     ko: "자",         q: "Do you like rulers?",     qko: "너는 자를 좋아하니?",         emoji: "📏", img: "colorful rulers" },
+    { en: "scissors",   word: "scissors",  ko: "가위",       q: "Do you like scissors?",   qko: "너는 가위를 좋아하니?",       emoji: "✂️", img: "a pair of colorful scissors" },
   ],
 };
 
@@ -108,13 +107,20 @@ const WORD_MEANINGS = {
   "elephants": "코끼리 (여러 마리)",
   "lion": "사자",
   "lions": "사자 (여러 마리)",
-  // 색깔
-  "red": "빨간색",
-  "blue": "파란색",
-  "yellow": "노란색",
-  "green": "초록색",
-  "pink": "분홍색",
-  "purple": "보라색",
-  "black": "검은색",
-  "white": "흰색",
+  // 학용품·물건
+  "pencil": "연필",
+  "pencils": "연필 (여러 개)",
+  "pen": "펜",
+  "pens": "펜 (여러 개)",
+  "crayon": "크레용",
+  "crayons": "크레용 (여러 개)",
+  "book": "책",
+  "books": "책 (여러 권)",
+  "notebook": "공책",
+  "notebooks": "공책 (여러 권)",
+  "bag": "가방",
+  "bags": "가방 (여러 개)",
+  "ruler": "자",
+  "rulers": "자 (여러 개)",
+  "scissors": "가위",
 };

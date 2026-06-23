@@ -2,7 +2,7 @@
  * 3학년 영어 · Do you like ~ ? · 묻고 답하기 웹 앱
  * - 음성 출력 : Web Speech API (SpeechSynthesis)
  * - 단어 클릭 : 발음 + 뜻 풍선
- * - 묻고 답하기 / 좋아함 서베이 / 듣고 맞히기 / 말하기 연습
+ * - 묻고 답하기 / 말하기 연습
  * ========================================================= */
 
 /* ---------- 음성 합성 (TTS) ---------- */
@@ -97,46 +97,26 @@ function imageUrl(prompt) {
   return `https://image.pollinations.ai/prompt/${p}?width=400&height=260&nologo=true&seed=${hashSeed(prompt)}`;
 }
 
-/* 카드/선택지의 그림(visual) 요소 만들기
- * 우선순위: 색깔(swatch) > 사진(img, 사진모드) > 이모지 */
-function makeVisual(item, cls) {
-  cls = cls || {};
-  if (item.swatch) {
-    const sw = document.createElement("div");
-    sw.className = cls.swatch || "swatch";
-    sw.style.background = item.swatch;
-    return sw;
-  }
+/* 카드 그림(visual) 요소 만들기 : 사진(img, 사진모드) > 이모지 */
+function makeVisual(item) {
   if (imageMode && item.img) {
     const img = document.createElement("img");
-    img.className = cls.photo || "photo";
+    img.className = "photo";
     img.loading = "lazy";
     img.alt = item.word || item.en;
     img.src = imageUrl(item.img);
     img.addEventListener("error", () => {
       const em = document.createElement("div");
-      em.className = cls.emoji || "emoji";
+      em.className = "emoji";
       em.textContent = item.emoji;
       img.replaceWith(em);
     });
     return img;
   }
   const em = document.createElement("div");
-  em.className = cls.emoji || "emoji";
+  em.className = "emoji";
   em.textContent = item.emoji;
   return em;
-}
-
-/* 카테고리 라벨 찾기 */
-function catLabel(key) {
-  const c = CATEGORIES.find(c => c.key === key);
-  return c ? c.label : key;
-}
-/* 전체 아이템(카테고리 표시 포함) 평탄화 */
-function allItems() {
-  const out = [];
-  CATEGORIES.forEach(c => ITEMS[c.key].forEach(it => out.push(Object.assign({ cat: c.key }, it))));
-  return out;
 }
 
 /* =========================================================
@@ -212,222 +192,7 @@ function renderQA() {
 }
 
 /* =========================================================
- * 2) 좋아함 서베이
- * ========================================================= */
-let surveyChoices = {};
-try { surveyChoices = JSON.parse(localStorage.getItem("dyl_survey") || "{}") || {}; } catch (e) {}
-function surveyKey(it) { return it.cat + "/" + it.en; }
-function saveSurvey() { try { localStorage.setItem("dyl_survey", JSON.stringify(surveyChoices)); } catch (e) {} }
-
-function renderSurvey() {
-  const wrap = document.getElementById("survey-list");
-  wrap.innerHTML = "";
-
-  CATEGORIES.forEach(cat => {
-    const title = document.createElement("div");
-    title.className = "survey-cat-title";
-    title.textContent = cat.label;
-    wrap.appendChild(title);
-
-    ITEMS[cat.key].forEach(item => {
-      const it = Object.assign({ cat: cat.key }, item);
-      const key = surveyKey(it);
-      const row = document.createElement("div");
-      row.className = "survey-row";
-
-      const face = document.createElement("div");
-      face.className = "survey-face";
-      if (it.swatch) {
-        const s = document.createElement("span");
-        s.className = "mini-swatch";
-        s.style.background = it.swatch;
-        face.appendChild(s);
-      } else {
-        face.textContent = it.emoji;
-      }
-
-      const q = document.createElement("div");
-      q.className = "survey-q";
-      const en = document.createElement("div");
-      en.className = "en";
-      en.textContent = it.q;
-      const ko = document.createElement("div");
-      ko.className = "ko";
-      ko.textContent = it.qko;
-      q.append(en, ko);
-
-      const listen = document.createElement("button");
-      listen.className = "survey-listen";
-      listen.textContent = "🔊";
-      listen.addEventListener("click", () => speak(it.q));
-
-      const pick = document.createElement("div");
-      pick.className = "survey-pick";
-      const yes = document.createElement("button");
-      yes.className = "pick-yes" + (surveyChoices[key] === "yes" ? " on" : "");
-      yes.textContent = "👍";
-      yes.title = "Yes, I do.";
-      const no = document.createElement("button");
-      no.className = "pick-no" + (surveyChoices[key] === "no" ? " on" : "");
-      no.textContent = "👎";
-      no.title = "No, I don't.";
-      yes.addEventListener("click", () => {
-        surveyChoices[key] = surveyChoices[key] === "yes" ? undefined : "yes";
-        if (!surveyChoices[key]) delete surveyChoices[key];
-        saveSurvey(); renderSurvey(); updateSurveyResult();
-        if (surveyChoices[key] === "yes") speak(ANSWERS.yes.en);
-      });
-      no.addEventListener("click", () => {
-        surveyChoices[key] = surveyChoices[key] === "no" ? undefined : "no";
-        if (!surveyChoices[key]) delete surveyChoices[key];
-        saveSurvey(); renderSurvey(); updateSurveyResult();
-        if (surveyChoices[key] === "no") speak(ANSWERS.no.en);
-      });
-      pick.append(yes, no);
-
-      row.append(face, q, listen, pick);
-      wrap.appendChild(row);
-    });
-  });
-}
-
-function updateSurveyResult() {
-  const items = allItems();
-  const total = items.length;
-  const answered = items.filter(it => surveyChoices[surveyKey(it)]).length;
-
-  // 진행 막대
-  const prog = document.getElementById("survey-progress");
-  const pct = Math.round((answered / total) * 100);
-  prog.innerHTML =
-    `📝 <b>${answered}</b> / ${total} 개 대답했어요!` +
-    `<div class="bar"><span style="width:${pct}%"></span></div>`;
-
-  document.getElementById("survey-count").textContent = answered;
-
-  // 결과
-  const box = document.getElementById("survey-result");
-  if (answered === 0) {
-    box.className = "survey-result";
-    box.innerHTML = "";
-    return;
-  }
-  const likes = items.filter(it => surveyChoices[surveyKey(it)] === "yes");
-  const dislikes = items.filter(it => surveyChoices[surveyKey(it)] === "no");
-
-  function liEmoji(it) { return it.swatch ? "🎨" : it.emoji; }
-  function listHtml(arr) {
-    if (!arr.length) return `<li class="none">아직 없어요</li>`;
-    return arr.map(it => `<li>${liEmoji(it)} ${it.word} <b>(${it.ko})</b></li>`).join("");
-  }
-
-  box.className = "survey-result show";
-  box.innerHTML =
-    `<div class="rtitle">🌟 나의 좋아함 결과 🌟</div>` +
-    `<div class="result-cols">` +
-      `<div class="result-box like"><h4>👍 I like… (${likes.length})</h4><ul>${listHtml(likes)}</ul></div>` +
-      `<div class="result-box dislike"><h4>👎 I don't like… (${dislikes.length})</h4><ul>${listHtml(dislikes)}</ul></div>` +
-    `</div>`;
-}
-
-document.getElementById("survey-reset").addEventListener("click", () => {
-  surveyChoices = {};
-  saveSurvey();
-  renderSurvey();
-  updateSurveyResult();
-});
-
-/* =========================================================
- * 3) 듣고 맞히기 게임
- * ========================================================= */
-let quizCat = "all";
-let quizTarget = null;
-let quizScore = 0, quizStreak = 0, quizTotal = 0;
-let quizLocked = false;
-
-function quizPool() {
-  return quizCat === "all" ? allItems() : ITEMS[quizCat].map(it => Object.assign({ cat: quizCat }, it));
-}
-function shuffle(a) {
-  const arr = a.slice();
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
-  return arr;
-}
-
-function newQuiz() {
-  const pool = quizPool();
-  quizLocked = false;
-  document.getElementById("quiz-next").style.display = "none";
-  const fb = document.getElementById("quiz-feedback");
-  fb.className = "quiz-feedback"; fb.textContent = "";
-
-  quizTarget = pool[Math.floor(Math.random() * pool.length)];
-  const others = shuffle(pool.filter(it => it.en !== quizTarget.en)).slice(0, 3);
-  const choices = shuffle([quizTarget, ...others]);
-
-  document.getElementById("quiz-question").innerHTML = "잘 듣고 골라요! 🎧";
-
-  const wrap = document.getElementById("quiz-choices");
-  wrap.innerHTML = "";
-  choices.forEach(it => {
-    const btn = document.createElement("button");
-    btn.className = "quiz-choice";
-    const v = makeVisual(it, { swatch: "qc-swatch", photo: "qc-photo", emoji: "qc-visual" });
-    const label = document.createElement("div");
-    label.className = "qc-label";
-    label.textContent = it.word;
-    btn.append(v, label);
-    btn.addEventListener("click", () => answerQuiz(it, btn));
-    wrap.appendChild(btn);
-  });
-
-  setTimeout(() => speak(quizTarget.q), 300);
-}
-
-function answerQuiz(picked, btn) {
-  if (quizLocked) return;
-  quizLocked = true;
-  quizTotal++;
-  const fb = document.getElementById("quiz-feedback");
-  const buttons = [...document.querySelectorAll(".quiz-choice")];
-
-  if (picked.en === quizTarget.en) {
-    quizScore++; quizStreak++;
-    btn.classList.add("correct");
-    buttons.forEach(b => { if (b !== btn) b.classList.add("dim"); });
-    fb.className = "quiz-feedback good";
-    fb.textContent = `⭐ 정답이에요! ${quizTarget.q} → Yes! (${quizTarget.ko})`;
-    speak(quizTarget.q);
-    setTimeout(() => { if (quizLocked) newQuiz(); }, 1600);
-  } else {
-    quizStreak = 0;
-    btn.classList.add("wrong");
-    buttons.forEach(b => {
-      const lbl = b.querySelector(".qc-label").textContent;
-      if (lbl === quizTarget.word) b.classList.add("correct");
-      else if (b !== btn) b.classList.add("dim");
-    });
-    fb.className = "quiz-feedback bad";
-    fb.innerHTML = `🔁 다시 들어봐요! 정답은 <b>${quizTarget.word}</b> (${quizTarget.ko}) 예요.`;
-    document.getElementById("quiz-next").style.display = "inline-block";
-  }
-  document.getElementById("quiz-score").textContent = quizScore;
-  document.getElementById("quiz-streak").textContent = quizStreak;
-  document.getElementById("quiz-total").textContent = quizTotal;
-  document.getElementById("quiz-question").textContent = quizTarget.q;
-}
-
-document.getElementById("quiz-replay").addEventListener("click", () => {
-  if (quizTarget) speak(quizTarget.q);
-  else newQuiz();
-});
-document.getElementById("quiz-next").addEventListener("click", newQuiz);
-
-/* =========================================================
- * 4) 말하기 연습 (마이크 정확도)
+ * 2) 말하기 연습 (마이크 정확도)
  * ========================================================= */
 let speakCat = "food";
 let stats = {};
@@ -489,7 +254,7 @@ function practiceAttempt(target, cb) {
 }
 
 function makePracticeCard(item, tone) {
-  // item: { en(문장), ko, emoji, swatch?, img?, word? }
+  // item: { en(문장), ko, tag }
   const div = document.createElement("div");
   div.className = "card pcard tone-" + (tone % 6);
 
@@ -596,13 +361,10 @@ function renderSpeak() {
 /* =========================================================
  * 주제(카테고리) 버튼 만들기
  * ========================================================= */
-function buildCatButtons(containerId, includeAll, current, onPick) {
+function buildCatButtons(containerId, current, onPick) {
   const wrap = document.getElementById(containerId);
   wrap.innerHTML = "";
-  const cats = includeAll
-    ? [{ key: "all", label: "🌈 모두" }, ...CATEGORIES]
-    : CATEGORIES.slice();
-  cats.forEach(c => {
+  CATEGORIES.forEach(c => {
     const btn = document.createElement("button");
     btn.className = "cat-btn" + (c.key === current() ? " active" : "");
     btn.textContent = c.label;
@@ -616,17 +378,14 @@ function buildCatButtons(containerId, includeAll, current, onPick) {
   });
 }
 
-buildCatButtons("qa-cats", false, () => qaCat, k => { qaCat = k; renderQA(); });
-buildCatButtons("quiz-cats", true, () => quizCat, k => { quizCat = k; newQuiz(); });
-buildCatButtons("speak-cats", false, () => speakCat, k => { speakCat = k; renderSpeak(); });
+buildCatButtons("qa-cats", () => qaCat, k => { qaCat = k; renderQA(); });
+buildCatButtons("speak-cats", () => speakCat, k => { speakCat = k; renderSpeak(); });
 
 /* ---------- 사진/이모지 토글 ---------- */
 document.getElementById("img-toggle").addEventListener("click", () => {
   imageMode = !imageMode;
-  const btn = document.getElementById("img-toggle");
-  btn.textContent = imageMode ? "🖼️ 사진" : "😀 그림";
+  document.getElementById("img-toggle").textContent = imageMode ? "🖼️ 사진" : "😀 그림";
   renderQA();
-  if (document.getElementById("tab-quiz").classList.contains("active")) newQuiz();
 });
 
 /* ---------- 말하기 속도 ---------- */
@@ -641,8 +400,6 @@ document.querySelectorAll(".tab-btn").forEach(btn => {
     const tab = btn.dataset.tab;
     document.getElementById("tab-" + tab).classList.add("active");
     synth.cancel(); hidePopup();
-    if (tab === "survey") { renderSurvey(); updateSurveyResult(); }
-    if (tab === "quiz" && !quizTarget) newQuiz();
     if (tab === "speak") renderSpeak();
     window.scrollTo({ top: 0, behavior: "smooth" });
   });
@@ -650,4 +407,3 @@ document.querySelectorAll(".tab-btn").forEach(btn => {
 
 /* ---------- 첫 화면 ---------- */
 renderQA();
-updateSurveyResult();
