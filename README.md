@@ -6,11 +6,11 @@
 
 ## 주제(카테고리) 3가지
 
-| 주제 | 낱말 (8개씩) |
+| 주제 | 낱말 (9개씩) |
 |------|------|
-| 🍎 음식·과일 | apple · banana · grapes · bread · salad · pizza · ice cream · orange *(수업에서 한 서베이)* |
-| 🐶 동물 | dog · cat · duck · tiger · rabbit · monkey · elephant · lion |
-| ✏️ 학용품·물건 | pencil · pen · crayon · book · notebook · bag · ruler · scissors |
+| 🍎 음식·과일 | apple · banana · grapes · bread · salad · pizza · ice cream · orange · strawberry *(수업에서 한 서베이)* |
+| 🐶 동물 | dog · cat · duck · tiger · rabbit · monkey · elephant · lion · bear |
+| ✏️ 학용품·물건 | pencil · pen · crayon · book · notebook · bag · ruler · scissors · paint |
 
 ## 기능 (탭 2개)
 

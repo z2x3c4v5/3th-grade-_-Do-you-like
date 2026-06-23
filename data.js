@@ -2,9 +2,9 @@
  * 3학년 영어 · Do you like ~ ? · 데이터
  * - 핵심 표현: "Do you like ___?" / "Yes, I do." / "No, I don't."
  * - 3개 주제(카테고리)
- *    🍎 음식·과일 : 사과·바나나·포도·빵·샐러드·피자·아이스크림·오렌지 (수업에서 한 서베이)
- *    🐶 동물      : 개·고양이·오리·호랑이·토끼·원숭이·코끼리·사자 (8가지)
- *    ✏️ 학용품·물건 : 연필·펜·크레용·책·공책·가방·자·가위 (8가지)
+ *    🍎 음식·과일 : 사과·바나나·포도·빵·샐러드·피자·아이스크림·오렌지·딸기 (수업에서 한 서베이)
+ *    🐶 동물      : 개·고양이·오리·호랑이·토끼·원숭이·코끼리·사자·곰 (9가지)
+ *    ✏️ 학용품·물건 : 연필·펜·크레용·책·공책·가방·자·가위·물감 (9가지)
  * - 단어를 누르면 뜻·발음을 알 수 있어요.
  * ========================================================= */
 
@@ -40,6 +40,7 @@ const ITEMS = {
     { en: "pizza",      word: "pizza",     ko: "피자",       q: "Do you like pizza?",      qko: "너는 피자를 좋아하니?",       emoji: "🍕", img: "a cheese pizza" },
     { en: "ice cream",  word: "ice cream", ko: "아이스크림", q: "Do you like ice cream?",  qko: "너는 아이스크림을 좋아하니?", emoji: "🍨", img: "ice cream in a cup" },
     { en: "oranges",    word: "orange",    ko: "오렌지",     q: "Do you like oranges?",    qko: "너는 오렌지를 좋아하니?",     emoji: "🍊", img: "fresh orange fruits" },
+    { en: "strawberries", word: "strawberry", ko: "딸기",   q: "Do you like strawberries?", qko: "너는 딸기를 좋아하니?",     emoji: "🍓", img: "fresh red strawberries" },
   ],
   animal: [
     { en: "dogs",       word: "dog",       ko: "개",         q: "Do you like dogs?",       qko: "너는 개를 좋아하니?",         emoji: "🐶", img: "a cute happy dog" },
@@ -50,6 +51,7 @@ const ITEMS = {
     { en: "monkeys",    word: "monkey",    ko: "원숭이",     q: "Do you like monkeys?",    qko: "너는 원숭이를 좋아하니?",     emoji: "🐵", img: "a funny monkey" },
     { en: "elephants",  word: "elephant",  ko: "코끼리",     q: "Do you like elephants?",  qko: "너는 코끼리를 좋아하니?",     emoji: "🐘", img: "a big elephant" },
     { en: "lions",      word: "lion",      ko: "사자",       q: "Do you like lions?",      qko: "너는 사자를 좋아하니?",       emoji: "🦁", img: "a lion with a mane" },
+    { en: "bears",      word: "bear",      ko: "곰",         q: "Do you like bears?",      qko: "너는 곰을 좋아하니?",         emoji: "🐻", img: "a cute brown bear" },
   ],
   thing: [
     { en: "pencils",    word: "pencil",    ko: "연필",       q: "Do you like pencils?",    qko: "너는 연필을 좋아하니?",       emoji: "✏️", img: "colorful pencils" },
@@ -60,6 +62,7 @@ const ITEMS = {
     { en: "bags",       word: "bag",       ko: "가방",       q: "Do you like bags?",       qko: "너는 가방을 좋아하니?",       emoji: "🎒", img: "a colorful school backpack" },
     { en: "rulers",     word: "ruler",     ko: "자",         q: "Do you like rulers?",     qko: "너는 자를 좋아하니?",         emoji: "📏", img: "colorful rulers" },
     { en: "scissors",   word: "scissors",  ko: "가위",       q: "Do you like scissors?",   qko: "너는 가위를 좋아하니?",       emoji: "✂️", img: "a pair of colorful scissors" },
+    { en: "paints",     word: "paint",     ko: "물감",       q: "Do you like paints?",     qko: "너는 물감을 좋아하니?",       emoji: "🎨", img: "a colorful paint palette" },
   ],
 };
 
@@ -90,6 +93,8 @@ const WORD_MEANINGS = {
   "cream": "크림 (ice cream: 아이스크림)",
   "orange": "오렌지; 주황색",
   "oranges": "오렌지 (여러 개)",
+  "strawberry": "딸기",
+  "strawberries": "딸기 (여러 개)",
   // 동물
   "dog": "개",
   "dogs": "개 (여러 마리)",
@@ -107,6 +112,8 @@ const WORD_MEANINGS = {
   "elephants": "코끼리 (여러 마리)",
   "lion": "사자",
   "lions": "사자 (여러 마리)",
+  "bear": "곰",
+  "bears": "곰 (여러 마리)",
   // 학용품·물건
   "pencil": "연필",
   "pencils": "연필 (여러 개)",
@@ -123,4 +130,6 @@ const WORD_MEANINGS = {
   "ruler": "자",
   "rulers": "자 (여러 개)",
   "scissors": "가위",
+  "paint": "물감",
+  "paints": "물감 (여러 색)",
 };

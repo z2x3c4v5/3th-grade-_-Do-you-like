@@ -224,12 +224,21 @@ const STOPWORDS = new Set(["a", "an", "the", "to", "of", "on", "in", "at", "for"
 function scoreMatch(target, heard) {
   const t = normalize(target).split(" ").filter(Boolean);
   const h = normalize(heard).split(" ").filter(Boolean);
+  if (!h.length) return 0;
   let content = t.filter(w => !STOPWORDS.has(w));
   if (!content.length) content = t;
+  // recall : 정답의 핵심 단어를 얼마나 말했나 (관대하게 평가)
   let hit = 0;
   content.forEach(w => { if (h.some(x => wordsClose(x, w))) hit++; });
-  let score = hit / content.length;
-  if (score >= 0.5) score = Math.min(1, score + 0.12);
+  const recall = hit / content.length;
+  // precision : 내가 말한 단어 중 정답에 있는 단어의 비율
+  //  → 정답과 관계없는(엉뚱한) 단어를 많이 말하면 점수가 내려감
+  let good = 0;
+  h.forEach(x => { if (t.some(w => wordsClose(x, w))) good++; });
+  const precision = good / h.length;
+  // recall 위주(관대)지만 precision이 낮으면(엉뚱한 말이 많으면) 깎음
+  let score = recall * (0.6 + 0.4 * precision);
+  if (recall >= 0.5 && precision >= 0.75) score = Math.min(1, score + 0.1);
   return score;
 }
 function practiceAttempt(target, cb) {
