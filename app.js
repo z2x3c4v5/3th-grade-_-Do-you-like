@@ -92,32 +92,47 @@ function hashSeed(s) {
   for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
   return h % 100000;
 }
-function imageUrl(prompt) {
-  const p = encodeURIComponent("a bright, friendly, realistic photo of " + prompt + ", for kids");
-  return `https://image.pollinations.ai/prompt/${p}?width=400&height=260&nologo=true&seed=${hashSeed(prompt)}`;
+/* 한 낱말마다 여러 개의 "실제 사진" 주소를 만들어 둠
+ * - 앞쪽 주소가 실패하면 다음 주소로 다시 시도해서, 항상 진짜 사진이 보이게 함
+ * - 1·2: AI 사진(pollinations, 아이들에게 안전한 친근한 사진)  3: 실제 사진(loremflickr) */
+function photoSources(item) {
+  const desc = item.img || item.word || item.en;
+  const p = encodeURIComponent("a bright, friendly, realistic photo of " + desc + ", for kids");
+  const seed = hashSeed(desc);
+  const tag = encodeURIComponent((item.word || desc).replace(/\s+/g, ","));
+  return [
+    `https://image.pollinations.ai/prompt/${p}?width=400&height=260&nologo=true&seed=${seed}`,
+    `https://image.pollinations.ai/prompt/${p}?width=400&height=260&nologo=true&seed=${(seed + 7919) % 100000}`,
+    `https://loremflickr.com/400/260/${tag}`,
+  ];
 }
 
-/* 카드 그림(visual) 요소 만들기 : 사진(img, 사진모드) > 이모지 */
+/* 카드 그림(visual) 요소 만들기 : 실제 사진(실패하면 다른 사진으로 재시도) */
 function makeVisual(item, cls) {
   cls = cls || {};
-  if (imageMode && item.img) {
-    const img = document.createElement("img");
-    img.className = cls.photo || "photo";
-    img.loading = "lazy";
-    img.alt = item.word || item.en;
-    img.src = imageUrl(item.img);
-    img.addEventListener("error", () => {
-      const em = document.createElement("div");
-      em.className = cls.emoji || "emoji";
-      em.textContent = item.emoji;
-      img.replaceWith(em);
-    });
-    return img;
+  if (!imageMode) {
+    const em = document.createElement("div");
+    em.className = cls.emoji || "emoji";
+    em.textContent = item.emoji;
+    return em;
   }
-  const em = document.createElement("div");
-  em.className = cls.emoji || "emoji";
-  em.textContent = item.emoji;
-  return em;
+  const img = document.createElement("img");
+  img.className = cls.photo || "photo";
+  img.loading = "lazy";
+  img.alt = item.word || item.en;
+  const srcs = photoSources(item);
+  let i = 0;
+  img.src = srcs[0];
+  img.addEventListener("error", () => {
+    i++;
+    if (i < srcs.length) { img.src = srcs[i]; return; }
+    // 모든 사진이 실패한 경우에만 이모지로 대체
+    const em = document.createElement("div");
+    em.className = cls.emoji || "emoji";
+    em.textContent = item.emoji;
+    img.replaceWith(em);
+  });
+  return img;
 }
 
 /* =========================================================
