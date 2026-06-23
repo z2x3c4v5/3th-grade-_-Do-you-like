@@ -241,6 +241,23 @@ function scoreMatch(target, heard) {
   if (recall >= 0.5 && precision >= 0.75) score = Math.min(1, score + 0.1);
   return score;
 }
+/* 음성 인식 결과를 보기 좋게 다듬기 (대·소문자 + 문장부호)
+ *  예) "do you like grapes" → "Do you like grapes?"
+ *      "yes i do"           → "Yes, I do." */
+function prettyHeard(text, target) {
+  let s = (text || "").trim().toLowerCase();
+  if (!s) return "";
+  // 'i' 와 i' 줄임말은 대문자로
+  s = s.replace(/\bi\b/g, "I").replace(/\bi'(\w+)/g, "I'$1");
+  // 첫 글자 대문자
+  s = s.charAt(0).toUpperCase() + s.slice(1);
+  // 대답 문장처럼 Yes/No 로 시작하면 콤마 넣기 (Yes I do → Yes, I do)
+  s = s.replace(/^(Yes|No)\s+(?=I\b)/, "$1, ");
+  // 끝 문장부호: 정답이 물음표로 끝나면 ?, 아니면 .
+  if (!/[.?!]$/.test(s)) s += /\?\s*$/.test(target || "") ? "?" : ".";
+  return s;
+}
+
 function practiceAttempt(target, cb) {
   if (!rec || recBusy) { cb.onend && cb.onend(); return; }
   recBusy = true;
@@ -342,9 +359,10 @@ function makePracticeCard(item) {
         s.attempts++; s.best = Math.max(s.best, score);
         stats[item.en] = s; saveStats();
         renderStats(score);
-        if (score >= 70) { fb.className = "mic-feedback good"; fb.innerHTML = `⭐ 훌륭해요! (${score}%)<br><span class="heard">내 발음: ${heard}</span>`; }
-        else if (score >= 40) { fb.className = "mic-feedback good"; fb.innerHTML = `👍 좋아요! 한 번 더! (${score}%)<br><span class="heard">내 발음: ${heard}</span>`; }
-        else { fb.className = "mic-feedback bad"; fb.innerHTML = `🔁 다시 또박또박! (${score}%)<br><span class="heard">내 발음: ${heard || "(못 들었어요)"}</span>`; }
+        const shown = prettyHeard(heard, item.en);
+        if (score >= 70) { fb.className = "mic-feedback good"; fb.innerHTML = `⭐ 훌륭해요! (${score}%)<br><span class="heard">내 발음: ${shown}</span>`; }
+        else if (score >= 40) { fb.className = "mic-feedback good"; fb.innerHTML = `👍 좋아요! 한 번 더! (${score}%)<br><span class="heard">내 발음: ${shown}</span>`; }
+        else { fb.className = "mic-feedback bad"; fb.innerHTML = `🔁 다시 또박또박! (${score}%)<br><span class="heard">내 발음: ${shown || "(못 들었어요)"}</span>`; }
       },
       onerror: err => {
         fb.className = "mic-feedback bad";
